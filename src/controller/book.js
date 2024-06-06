@@ -78,8 +78,18 @@ const addBook = async (req, res) => {
   }
 };
 
+const getAllReview = async (req, res) => {
+  try {
+    const results = await pool.query(query.getAllReview); 
+    res.status(200).json(results.rows);
+  } catch (error) {
+    res.status(400).send(error.message); 
+  } 
+};
+
 module.exports = {
   getAllBook,
   getBookByKeyword,
   addBook,
+  getAllReview,
 };

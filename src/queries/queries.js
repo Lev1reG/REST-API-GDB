@@ -8,6 +8,7 @@ const addBookAuthor = `INSERT INTO "Book_Author" ("Book_ID", "Author_ID")
   `;
 const getPublisherID = `SELECT "Publisher_ID" FROM "Publisher" WHERE "Name" = $1`;
 const getAuthorID = `SELECT "Author_ID" FROM "Author" WHERE "Name" = $1`;
+const getAllReview = `SELECT * FROM "Book_Review_Customer_View"`;
 
 module.exports = {
   getAllBook,
@@ -16,4 +17,5 @@ module.exports = {
   addBookAuthor,
   getPublisherID,
   getAuthorID,
+  getAllReview,
 };
