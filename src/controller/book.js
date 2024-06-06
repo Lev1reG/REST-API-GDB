@@ -80,11 +80,34 @@ const addBook = async (req, res) => {
 
 const getAllReview = async (req, res) => {
   try {
-    const results = await pool.query(query.getAllReview); 
+    const results = await pool.query(query.getAllReview);
     res.status(200).json(results.rows);
   } catch (error) {
-    res.status(400).send(error.message); 
-  } 
+    res.status(400).send(error.message);
+  }
+};
+
+const getReviewByTitle = async (req, res) => {
+  const { title } = req.body;
+
+  if (!title) {
+    res.status(400).send("Please enter a title");
+    return;
+  }
+
+  const keyword = `%${title}%`;
+
+  try {
+    const results = await pool.query(query.getReviewByTitle, [keyword]);
+
+    if (!results.rows.length) {
+      res.status(404).send("Book not found");
+      return;
+    }
+    res.status(200).json(results.rows);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
 module.exports = {
@@ -92,4 +115,5 @@ module.exports = {
   getBookByKeyword,
   addBook,
   getAllReview,
+  getReviewByTitle,
 };
