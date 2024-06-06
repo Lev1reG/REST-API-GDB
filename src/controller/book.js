@@ -14,7 +14,8 @@ const getBookByKeyword = async (req, res) => {
   const { title } = req.body;
 
   if (!title) {
-    return res.status(400).send("Please enter a title");
+    res.status(400).send("Please enter a title");
+    return;
   }
 
   const keyword = `%${title}%`;
@@ -23,6 +24,7 @@ const getBookByKeyword = async (req, res) => {
     const results = await pool.query(query.getBookByKeyword, [keyword]);
     if (!results.rows.length) {
       res.status(404).send("Book not found");
+      return;
     }
     res.status(200).json(results.rows);
   } catch (error) {
@@ -43,6 +45,7 @@ const addBook = async (req, res) => {
     !Price
   ) {
     res.status(400).send("Please enter all fields");
+    return;
   }
 
   try {
@@ -50,12 +53,14 @@ const addBook = async (req, res) => {
 
     if (!author.rows.length) {
       res.status(404).send("Author not found");
+      return;
     }
 
     const publisher = await pool.query(query.getPublisherID, [Publisher]);
 
     if (!publisher.rows.length) {
       res.status(404).send("Publisher not found");
+      return;
     }
 
     await pool.query(query.addBook, [
