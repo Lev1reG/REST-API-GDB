@@ -73,7 +73,7 @@ npm run start
         "Pages": book_pages,
         "Price": book_price
     }
-    and so on..
+    // and so on..
 ]
 ```
 
@@ -110,7 +110,7 @@ npm run start
         "Rating": book_rating,
         "Review": "review content"
     }
-    and so on..
+    // and so on..
 ]
 ```
 
