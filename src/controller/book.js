@@ -161,6 +161,11 @@ const addReview = async (req, res) => {
         return;
       }
 
+      if(Rating < 1 || Rating > 5) {
+        res.status(400).send("Rating must be between 1 and 5");
+        return;
+      }
+
       await client.query(query.addReview, [Title, Customer, Rating, Review]);
     }
     await client.query("COMMIT");
