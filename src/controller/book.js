@@ -2,13 +2,12 @@ const pool = require("../db/db");
 const query = require("../queries/queries");
 
 const getAllBook = async (req, res) => {
-  pool.query(query.getAllBook, (error, results) => {
-    try {
-      res.status(200).json(results.rows);
-    } catch (error) {
-      res.status(400).send(error.message);
-    }
-  });
+  try {
+    const results = await pool.query(query.getAllBook);
+    res.status(200).json(results.rows);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
 const getBookByKeyword = async (req, res) => {
@@ -18,18 +17,17 @@ const getBookByKeyword = async (req, res) => {
     return res.status(400).send("Please enter a title");
   }
 
-  keyword = `%${title}%`;
+  const keyword = `%${title}%`;
 
-  pool.query(query.getBookByKeyword, [keyword], (error, results) => {
-    try {
-      if (!results.rows.length) {
-        return res.status(404).send("Book not found");
-      }
-      res.status(200).json(results.rows);
-    } catch (error) {
-      res.status(400).send(error.message);
+  try {
+    const results = await pool.query(query.getBookByKeyword, [keyword]);
+    if (!results.rows.length) {
+      return res.status(404).send("Book not found");
     }
-  });
+    res.status(200).json(results.rows);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
 module.exports = {
