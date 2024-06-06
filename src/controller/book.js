@@ -33,8 +33,7 @@ const getBookByKeyword = async (req, res) => {
 };
 
 const addBook = async (req, res) => {
-  const { Title, Synopsis, Publisher, Author, Publication_Year, Pages, Price } =
-    req.body;
+  const { Title, Synopsis, Publisher, Author, Publication_Year, Pages, Price } = req.body;
 
   if (
     !Title ||
@@ -110,10 +109,39 @@ const getReviewByTitle = async (req, res) => {
   }
 };
 
+const addReview = async (req, res) => {
+  const { Title, Customer, Rating, Review } = req.body;
+
+  if (!Title || !Customer || !Rating || !Review) {
+    res.status(400).send("Please enter all fields");
+    return;
+  }
+
+  try {
+    const book = await pool.query(query.getBookByTitle, [Title]);
+    if (!book.rows.length) {
+      res.status(404).send("Book not found");
+      return;
+    }
+
+    const customer = await pool.query(query.getCustomerByName, [Customer]);
+    if (!customer.rows.length) {
+      res.status(404).send("Customer not found");
+      return;
+    }
+
+    await pool.query(query.addReview, [Title, Customer, Rating, Review]);
+    res.status(201).send("Review added successfully");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
 module.exports = {
   getAllBook,
   getBookByKeyword,
   addBook,
   getAllReview,
   getReviewByTitle,
+  addReview,
 };
