@@ -33,47 +33,68 @@ const getBookByKeyword = async (req, res) => {
 };
 
 const addBook = async (req, res) => {
-  const { Title, Synopsis, Publisher, Author, Publication_Year, Pages, Price } = req.body;
-
-  if (
-    !Title ||
-    !Synopsis ||
-    !Publisher ||
-    !Publication_Year ||
-    !Pages ||
-    !Price
-  ) {
-    res.status(400).send("Please enter all fields");
-    return;
+  const books = req.body;
+  if (!Array.isArray(books) || !books.length) {
+    res.status(400).send("Please provide a list of books");
   }
 
+  const client = await pool.connect();
   try {
-    const author = await pool.query(query.getAuthorID, [Author]);
+    await client.query("BEGIN");
 
-    if (!author.rows.length) {
-      res.status(404).send("Author not found");
-      return;
+    for (const book of books) {
+      const {
+        Title,
+        Synopsis,
+        Publisher,
+        Author,
+        Publication_Year,
+        Pages,
+        Price,
+      } = book;
+
+      if (
+        !Title ||
+        !Synopsis ||
+        !Publisher ||
+        !Publication_Year ||
+        !Pages ||
+        !Price
+      ) {
+        res.status(400).send("Please enter all fields");
+        return;
+      }
+
+      const author = await client.query(query.getAuthorID, [Author]);
+      if (!author.rows.length) {
+        res.status(404).send("Author not found");
+        return;
+      }
+
+      const publisher = await client.query(query.getPublisherID, [Publisher]);
+      if (!publisher.rows.length) {
+        res.status(404).send("Publisher not found");
+        return;
+      }
+
+      await client.query(query.addBook, [
+        Title,
+        Synopsis,
+        Publisher,
+        Publication_Year,
+        Pages,
+        Price,
+      ]);
+      await client.query(query.addBookAuthor, [Title, Author]);
+      await client.query("COMMIT");
+
+      res.status(201).send("Book added successfully");
     }
-
-    const publisher = await pool.query(query.getPublisherID, [Publisher]);
-
-    if (!publisher.rows.length) {
-      res.status(404).send("Publisher not found");
-      return;
-    }
-
-    await pool.query(query.addBook, [
-      Title,
-      Synopsis,
-      Publisher,
-      Publication_Year,
-      Pages,
-      Price,
-    ]);
-    await pool.query(query.addBookAuthor, [Title, Author]);
-    res.status(201).send("Book added successfully");
   } catch (error) {
+    await client.query("ROLLBACK");
     res.status(400).send(error.message);
+  } finally {
+    client.release();
   }
 };
 
@@ -110,30 +131,46 @@ const getReviewByTitle = async (req, res) => {
 };
 
 const addReview = async (req, res) => {
-  const { Title, Customer, Rating, Review } = req.body;
+  const reviews = req.body;
 
-  if (!Title || !Customer || !Rating || !Review) {
-    res.status(400).send("Please enter all fields");
-    return;
+  if (!Array.isArray(reviews) || !reviews.length) {
+    res.status(400).send("Please provide a list of reviews");
   }
 
+  const client = await pool.connect();
   try {
-    const book = await pool.query(query.getBookByTitle, [Title]);
-    if (!book.rows.length) {
-      res.status(404).send("Book not found");
-      return;
-    }
+    await client.query("BEGIN");
 
-    const customer = await pool.query(query.getCustomerByName, [Customer]);
-    if (!customer.rows.length) {
-      res.status(404).send("Customer not found");
-      return;
-    }
+    for (const review of reviews) {
+      const { Title, Customer, Rating, Review } = review;
 
-    await pool.query(query.addReview, [Title, Customer, Rating, Review]);
+      if (!Title || !Customer || !Rating || !Review) {
+        res.status(400).send("Please enter all fields");
+        return;
+      }
+
+      const book = await client.query(query.getBookByTitle, [Title]);
+      if (!book.rows.length) {
+        res.status(404).send("Book not found");
+        return;
+      }
+
+      const customer = await client.query(query.getCustomerByName, [Customer]);
+      if (!customer.rows.length) {
+        res.status(404).send("Customer not found");
+        return;
+      }
+
+      await client.query(query.addReview, [Title, Customer, Rating, Review]);
+    }
+    await client.query("COMMIT");
+
     res.status(201).send("Review added successfully");
   } catch (error) {
+    await client.query("ROLLBACK");
     res.status(400).send(error.message);
+  } finally {
+    client.release();
   }
 };
 
