@@ -32,5 +32,5 @@ module.exports = {
   getReviewByTitle,
   addReview,
   getCustomerByName,
-  updateBookAuthor
+  updateBookAuthor,
 };
