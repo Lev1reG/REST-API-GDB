@@ -22,9 +22,52 @@ const getBookByKeyword = async (req, res) => {
   try {
     const results = await pool.query(query.getBookByKeyword, [keyword]);
     if (!results.rows.length) {
-      return res.status(404).send("Book not found");
+      res.status(404).send("Book not found");
     }
     res.status(200).json(results.rows);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+const addBook = async (req, res) => {
+  const { Title, Synopsis, Publisher, Author, Publication_Year, Pages, Price } =
+    req.body;
+
+  if (
+    !Title ||
+    !Synopsis ||
+    !Publisher ||
+    !Publication_Year ||
+    !Pages ||
+    !Price
+  ) {
+    res.status(400).send("Please enter all fields");
+  }
+
+  try {
+    const author = await pool.query(query.getAuthorID, [Author]);
+
+    if (!author.rows.length) {
+      res.status(404).send("Author not found");
+    }
+
+    const publisher = await pool.query(query.getPublisherID, [Publisher]);
+
+    if (!publisher.rows.length) {
+      res.status(404).send("Publisher not found");
+    }
+
+    await pool.query(query.addBook, [
+      Title,
+      Synopsis,
+      Publisher,
+      Publication_Year,
+      Pages,
+      Price,
+    ]);
+    await pool.query(query.addBookAuthor, [Title, Author]);
+    res.status(201).send("Book added successfully");
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -33,4 +76,5 @@ const getBookByKeyword = async (req, res) => {
 module.exports = {
   getAllBook,
   getBookByKeyword,
+  addBook,
 };
