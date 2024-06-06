@@ -7,6 +7,7 @@ const book = (router) => {
   router.get("/review", controller.getAllReview);
   router.get("/search/review", controller.getReviewByTitle);
   router.post("/review", controller.addReview);
+  router.put("/book", controller.updateBookAuthor);
 };
 
 module.exports = book;

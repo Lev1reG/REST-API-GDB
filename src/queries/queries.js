@@ -16,6 +16,9 @@ const addReview = `
   INSERT INTO "Review" ("Book_ID", "Customer_ID", "Rating", "Review_Text")
     VALUES ((SELECT "Book_ID" FROM "Book" WHERE "Title" = $1 LIMIT 1), (SELECT "Customer_ID" FROM "Customer" WHERE "Name" = $2 LIMIT 1), $3, $4)
   `;
+const updateBookAuthor = `
+  UPDATE "Book_Author" SET "Author_ID" = (SELECT "Author_ID" FROM "Author" WHERE "Name" = $2 LIMIT 1) 
+  WHERE "Book_ID" = (SELECT "Book_ID" FROM "Book" WHERE "Title" = $1 LIMIT 1)`;
 
 module.exports = {
   getAllBook,
@@ -29,4 +32,5 @@ module.exports = {
   getReviewByTitle,
   addReview,
   getCustomerByName,
+  updateBookAuthor
 };

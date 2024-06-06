@@ -179,6 +179,36 @@ const addReview = async (req, res) => {
   }
 };
 
+const updateBookAuthor = async (req, res) => {
+  const { Title, Author } = req.body;
+
+  if (!Title || !Author) {
+    res.status(400).send("Please enter all fields");
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    const book = await client.query(query.getBookByTitle, [Title]);
+    if (!book.rows.length) {
+      res.status(404).send("Book not found");
+      return;
+    }
+
+    const author = await client.query(query.getAuthorID, [Author]);
+    if (!author.rows.length) {
+      res.status(404).send("Author not found");
+      return;
+    }
+
+    await client.query(query.updateBookAuthor, [Title, Author]);
+
+    res.status(200).send("Book author updated successfully");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
 module.exports = {
   getAllBook,
   getBookByKeyword,
@@ -186,4 +216,5 @@ module.exports = {
   getAllReview,
   getReviewByTitle,
   addReview,
+  updateBookAuthor,
 };
